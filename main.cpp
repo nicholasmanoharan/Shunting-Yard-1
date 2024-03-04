@@ -6,6 +6,15 @@
 
 using namespace std;
 
+class TreeNode {
+public:
+    char data;
+    TreeNode* left;
+    TreeNode* right;
+
+    TreeNode(char d) : data(d), left(nullptr), right(nullptr) {}
+};
+
 class Node {
 public:
     char data;
@@ -51,22 +60,6 @@ public:
 };
 
 class ExpressionConverter {
-private:
-    static bool isOperator(char c) {
-        return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
-    }
-
-    static int precedence(char c) {
-        if (c == '^')
-            return 3;
-        else if (c == '*' || c == '/')
-            return 2;
-        else if (c == '+' || c == '-')
-            return 1;
-        else
-            return -1;
-    }
-
 public:
     static string infixToPostfix(string infix) {
         Stack operatorStack;
@@ -124,6 +117,18 @@ public:
 
     static bool isOperator(char c) {
         return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
+    }
+
+private:
+    static int precedence(char c) {
+        if (c == '^')
+            return 3;
+        else if (c == '*' || c == '/')
+            return 2;
+        else if (c == '+' || c == '-')
+            return 1;
+        else
+            return -1;
     }
 };
 
