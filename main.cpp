@@ -61,11 +61,28 @@ public:
 
 class ExpressionConverter {
 public:
-    static string infixToPostfix(string infix) {
-        Stack operatorStack;
-        string postfix;
-        for (auto it = infix.begin(); it != infix.end(); ++it) {
-            char& c = *it;
+    static string infixToPostfix(string infix);
+    static TreeNode* buildExpressionTree(string postfix);
+    static bool isOperator(char c);
+
+private:
+    static int precedence(char c);
+};
+
+string ExpressionConverter::infixToPostfix(string infix) {
+    Stack operatorStack;
+    string postfix;
+    string number; // Variable to store multi-digit numbers
+    for (auto it = infix.begin(); it != infix.end(); ++it) {
+        char& c = *it;
+        if (isdigit(c)) { // If character is a digit, append to number
+            number += c;
+        } else {
+            if (!number.empty()) {
+                postfix += number; // Add number to postfix
+                postfix += ' ';    // Add space after number
+                number.clear();    // Clear number for next use
+            }
             if (isalnum(c)) { // If operand, append to postfix
                 postfix += c;
                 postfix += ' '; // Add space after operand
@@ -87,104 +104,115 @@ public:
                 operatorStack.push(c);
             }
         }
-        // Pop remaining operators from stack
-        while (!operatorStack.isEmpty()) {
-            postfix += operatorStack.peek();
-            postfix += ' '; // Add space after operator
-            operatorStack.pop();
+    }
+    if (!number.empty()) {
+        postfix += number; // Add number to postfix
+        postfix += ' ';    // Add space after number
+    }
+    // Pop remaining operators from stack
+    while (!operatorStack.isEmpty()) {
+        postfix += operatorStack.peek();
+        postfix += ' '; // Add space after operator
+        operatorStack.pop();
+    }
+    return postfix;
+}
+
+TreeNode* ExpressionConverter::buildExpressionTree(string postfix) {
+    stack<TreeNode*> st;
+    for (auto it = postfix.begin(); it != postfix.end(); ++it) {
+        char& c = *it;
+        if (isalnum(c)) {
+            TreeNode* newNode = new TreeNode(c);
+            st.push(newNode);
+        } else {
+            TreeNode* newNode = new TreeNode(c);
+            newNode->right = st.top();
+            st.pop();
+            newNode->left = st.top();
+            st.pop();
+            st.push(newNode);
         }
-        return postfix;
     }
+    return st.top();
+}
 
-    static TreeNode* buildExpressionTree(string postfix) {
-        stack<TreeNode*> st;
-        for (auto it = postfix.begin(); it != postfix.end(); ++it) {
-            char& c = *it;
-            if (isalnum(c)) {
-                TreeNode* newNode = new TreeNode(c);
-                st.push(newNode);
-            } else {
-                TreeNode* newNode = new TreeNode(c);
-                newNode->right = st.top();
-                st.pop();
-                newNode->left = st.top();
-                st.pop();
-                st.push(newNode);
-            }
-        }
-        return st.top();
-    }
+bool ExpressionConverter::isOperator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
+}
 
-    static bool isOperator(char c) {
-        return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
-    }
-
-private:
-    static int precedence(char c) {
-        if (c == '^')
-            return 3;
-        else if (c == '*' || c == '/')
-            return 2;
-        else if (c == '+' || c == '-')
-            return 1;
-        else
-            return -1;
-    }
-};
+int ExpressionConverter::precedence(char c) {
+    if (c == '^')
+        return 3;
+    else if (c == '*' || c == '/')
+        return 2;
+    else if (c == '+' || c == '-')
+        return 1;
+    else
+        return -1;
+}
 
 class ExpressionTree {
 private:
-    static void printInfixRecursive(TreeNode* root) {
-        if (root) {
-            bool needParentheses = false;
-            if (root->left && ExpressionConverter::isOperator(root->left->data)) {
-                needParentheses = true;
-            }
-            if (needParentheses) cout << "(";
-            printInfixRecursive(root->left);
-            if (needParentheses) cout << ")";
-            cout << root->data;
-            needParentheses = false;
-            if (root->right && ExpressionConverter::isOperator(root->right->data)) {
-                needParentheses = true;
-            }
-            if (needParentheses) cout << "(";
-            printInfixRecursive(root->right);
-            if (needParentheses) cout << ")";
-        }
-    }
-
-    static void printPrefixRecursive(TreeNode* root) {
-        if (root) {
-            cout << root->data;
-            cout << " ";
-            printPrefixRecursive(root->left);
-            printPrefixRecursive(root->right);
-        }
-    }
-
-    static void printPostfixRecursive(TreeNode* root) {
-        if (root) {
-            printPostfixRecursive(root->left);
-            printPostfixRecursive(root->right);
-            cout << root->data;
-            cout << " ";
-        }
-    }
+    static void printInfixRecursive(TreeNode* root);
+    static void printPrefixRecursive(TreeNode* root);
+    static void printPostfixRecursive(TreeNode* root);
 
 public:
-    static void printInfix(TreeNode* root) {
-        printInfixRecursive(root);
-    }
-
-    static void printPrefix(TreeNode* root) {
-        printPrefixRecursive(root);
-    }
-
-    static void printPostfix(TreeNode* root) {
-        printPostfixRecursive(root);
-    }
+    static void printInfix(TreeNode* root);
+    static void printPrefix(TreeNode* root);
+    static void printPostfix(TreeNode* root);
 };
+
+void ExpressionTree::printInfixRecursive(TreeNode* root) {
+    if (root) {
+        bool needParentheses = false;
+        if (root->left && ExpressionConverter::isOperator(root->left->data)) {
+            needParentheses = true;
+        }
+        if (needParentheses) cout << "(";
+        printInfixRecursive(root->left);
+        if (needParentheses) cout << ")";
+        cout << root->data;
+        needParentheses = false;
+        if (root->right && ExpressionConverter::isOperator(root->right->data)) {
+            needParentheses = true;
+        }
+        if (needParentheses) cout << "(";
+        printInfixRecursive(root->right);
+        if (needParentheses) cout << ")";
+    }
+}
+
+void ExpressionTree::printPrefixRecursive(TreeNode* root) {
+    if (root) {
+        cout << root->data;
+        cout << " ";
+        printPrefixRecursive(root->left);
+        printPrefixRecursive(root->right);
+    }
+}
+
+void ExpressionTree::printPostfixRecursive(TreeNode* root) {
+    if (root) {
+        printPostfixRecursive(root->left);
+        printPostfixRecursive(root->right);
+        cout << root->data;
+        cout << " ";
+    }
+}
+
+void ExpressionTree::printInfix(TreeNode* root) {
+    printInfixRecursive(root);
+}
+
+void ExpressionTree::printPrefix(TreeNode* root) {
+    printPrefixRecursive(root);
+}
+
+void ExpressionTree::printPostfix(TreeNode* root) {
+    printPostfixRecursive(root);
+}
 
 int main() {
     string infix;
@@ -200,14 +228,6 @@ int main() {
     cout << "Expression tree: " << endl;
     cout << "Infix notation: ";
     ExpressionTree::printInfix(root);
-    cout << endl;
-
-    cout << "Prefix notation: ";
-    ExpressionTree::printPrefix(root);
-    cout << endl;
-
-    cout << "Postfix notation: ";
-    ExpressionTree::printPostfix(root);
     cout << endl;
 
     return 0;
