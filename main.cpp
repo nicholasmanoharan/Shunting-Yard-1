@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+// Binary Tree Node
 class TreeNode {
 public:
     char data;
@@ -20,8 +20,8 @@ public:
     }
 };
 
-
-class Stack {
+// Stack and Queue using Linked List
+class Container {
 private:
     struct Node {
         char data;
@@ -30,9 +30,11 @@ private:
     };
 
     Node* top;
+    Node* front;
+    Node* rear;
 
 public:
-    Stack() : top(nullptr) {}
+    Container() : top(nullptr), front(nullptr), rear(nullptr) {}
 
     void push(char val) {
         Node* newNode = new Node(val);
@@ -42,7 +44,7 @@ public:
 
     char pop() {
         if (isEmpty()) {
-            cout << "Stack is empty!" << endl;
+            cout << "Container is empty!" << endl;
             return '\0';
         }
         char val = top->data;
@@ -54,30 +56,11 @@ public:
 
     char peek() {
         if (isEmpty()) {
-            cout << "Stack is empty!" << endl;
+            cout << "Container is empty!" << endl;
             return '\0';
         }
         return top->data;
     }
-
-    bool isEmpty() {
-        return top == nullptr;
-    }
-};
-
-class Queue {
-private:
-    struct Node {
-        char data;
-        Node* next;
-        Node(char val) : data(val), next(nullptr) {}
-    };
-
-    Node* front;
-    Node* rear;
-
-public:
-    Queue() : front(nullptr), rear(nullptr) {}
 
     void enqueue(char val) {
         Node* newNode = new Node(val);
@@ -91,7 +74,7 @@ public:
 
     char dequeue() {
         if (isEmpty()) {
-            cout << "Queue is empty!" << endl;
+            cout << "Container is empty!" << endl;
             return '\0';
         }
         char val = front->data;
@@ -105,15 +88,16 @@ public:
     }
 
     bool isEmpty() {
-        return front == nullptr;
+        return top == nullptr && front == nullptr;
     }
 };
 
-
+// Function to check if a character is an operator
 bool isOperator(char c) {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
 }
 
+// Function to check precedence of operators
 int precedence(char op) {
     if (op == '^')
         return 3;
@@ -125,42 +109,42 @@ int precedence(char op) {
         return -1;
 }
 
-
+// Shunting Yard Algorithm
 string shuntingYard(string infix) {
-    Stack operatorStack;
+    Container operatorStack;
     string postfix = "";
 
     for (char& token : infix) {
         if (isdigit(token)) {
             postfix += token;
-            postfix += ' '; 
+            postfix += ' '; // Adding space as delimiter
         } else if (token == '(') {
             operatorStack.push(token);
         } else if (token == ')') {
             while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
                 postfix += operatorStack.pop();
-                postfix += ' '; 
+                postfix += ' '; // Adding space as delimiter
             }
-            operatorStack.pop(); 
+            operatorStack.pop(); // Discard '('
         } else if (isOperator(token)) {
             while (!operatorStack.isEmpty() && precedence(token) <= precedence(operatorStack.peek())) {
                 postfix += operatorStack.pop();
-                postfix += ' '; 
+                postfix += ' '; // Adding space as delimiter
             }
             operatorStack.push(token);
         }
     }
 
-   
+    // Empty the remaining operators in stack
     while (!operatorStack.isEmpty()) {
         postfix += operatorStack.pop();
-        postfix += ' '; 
+        postfix += ' '; // Adding space as delimiter
     }
 
     return postfix;
 }
 
-
+// Build Expression Tree from Postfix Notation
 TreeNode* buildExpressionTree(string postfix) {
     stack<TreeNode*> expressionStack;
 
@@ -185,7 +169,7 @@ TreeNode* buildExpressionTree(string postfix) {
     return expressionStack.top();
 }
 
-
+// Recursive function to print infix expression from Expression Tree
 void printInfix(TreeNode* root) {
     if (root) {
         if (isOperator(root->data)) {
@@ -200,7 +184,7 @@ void printInfix(TreeNode* root) {
     }
 }
 
-
+// Recursive function to print prefix expression from Expression Tree
 void printPrefix(TreeNode* root) {
     if (root) {
         cout << root->data;
@@ -209,7 +193,7 @@ void printPrefix(TreeNode* root) {
     }
 }
 
-
+// Recursive function to print postfix expression from Expression Tree
 void printPostfix(TreeNode* root) {
     if (root) {
         printPostfix(root->left);
